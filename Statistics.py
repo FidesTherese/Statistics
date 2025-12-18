@@ -454,11 +454,75 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
         
         return result
     
+    def yuan_welch_t_test(dt1: list, dt2: list, gamma: float):
+        import numpy as np
+        from scipy.stats import t
+
+        dt1 = np.array(dt1)
+        dt2 = np.array(dt2)
+
+        dt1_copy = np.sort(dt1.copy())
+        dt2_copy = np.sort(dt2.copy())
+
+        # Define the size of data
+        n1 = dt1.size
+        n2 = dt2.size
+
+        # Calculate how many data we trim
+        g1 = int(gamma * n1)
+        g2 = int(gamma * n2)
+
+        # Trimmed data
+        dt1 = np.sort(dt1)[g1: n1 - g1]
+        dt2 = np.sort(dt2)[g2: n2 - g2]
+
+        # Define effective number of samples
+        h1 = n1 - 2 * g1
+        h2 = n2 - 2 * g2
+
+        # Define winsorized data
+        def winsorize(x, gamma):
+            x = np.array(x)
+            n = len(x)
+            g = int(np.floor(gamma * n))
+
+            x_w = x.copy()
+            if g > 0:
+                x_w[:g] = x[g]
+                x_w[-g:] = x[-g - 1]
+
+            return x_w
+
+        # Winsorized variance
+        v1 = np.var(winsorize(dt1_copy, gamma), ddof=1)
+        v2 = np.var(winsorize(dt2_copy, gamma), ddof=1)
+        s1_sq = v1 / (1 - 2 * gamma) ** 2
+        s2_sq = v2 / (1 - 2 * gamma) ** 2
+
+        # Trimmed mean
+        x1 = np.mean(dt1)
+        x2 = np.mean(dt2)
+
+        # Welch–Satterthwaite degrees of freedom
+        numerator = (s1_sq / h1 + s2_sq / h2) ** 2
+        dominator = ((s1_sq / h1) ** 2) / (h1 - 1) + ((s2_sq / h2) ** 2) / (h2 - 1)
+        df = numerator / dominator
+
+        # t-statistic
+        t_stat = (x1 - x2) / np.sqrt(s1_sq / h1 + s2_sq / h2)
+
+        # Two-sided p-value
+        p = 2 * (1 - t.cdf(abs(t_stat), df=df))
+
+        return p
+    
     if type == 'oneway':
         return one_way_t_test(dt1, mu)
     elif type == 'independent':
         return independent_t_test(dt1, dt2)
     elif type == 'paired':
         return paired_t_test(dt1, dt2)
+    elif type == 'yuen':
+        return yuan_welch_t_test(dt1, dt2, gamma=0.2)
     else:
-        raise ValueError('Only oneway, independent and paired are valid type!')
+        raise ValueError('Only oneway, independent, paired and yuen are valid type!')
