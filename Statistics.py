@@ -526,3 +526,50 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
         return yuan_welch_t_test(dt1, dt2, gamma=0.2)
     else:
         raise ValueError('Only oneway, independent, paired and yuen are valid type!')
+
+# Mann-Whitney U Test
+def mann_whitney_u_test(dt1: list, dt2: list):
+    # Ranking
+    def get_rank(dt: list):
+        sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
+        ranks = [0] * len(dt)
+
+        i = 0
+        while i < len(sorted_dt):
+            j = i
+            while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
+                j += 1
+                avg_rank = (i + j + 2) / 2
+                for k in range(i, j + 1):
+                    ranks[sorted_dt[k][1]] = avg_rank
+            i = j + 1
+        
+        return ranks
+    
+    # Mann-Whitney
+    from math import sqrt, inf
+    from scipy.integrate import quad
+
+    n1, n2 = len(dt1), len(dt2)
+    combined = dt1 + dt2
+    combined_ranks = get_rank(combined)
+
+    r1 = sum(combined_ranks[:n1])
+    r2 = sum(combined_ranks[n1:])
+
+    u1 = n1 * n2 + ((n1 * (n1 + 1)) / 2) - r1
+    u2 = n1 * n2 + ((n2 * (n2 + 1)) / 2) - r2
+    u_stat = min(u1, u2)
+
+    # Approximation by Z-distribution
+    mu_u = (n1 * n2) / 2
+    sigma_u = sqrt((n1 * n2 * (n1 + n2 + 1)) / 12)
+    z_stat = (u_stat - mu_u) / sigma_u
+
+    p_val_tail, _ = quad(t_pdf_log, abs(z_stat), inf, args = (999,)) # When set df = 999, t-distribution will be Z-distribution
+    p_value = 2 * p_val_tail
+
+    return {
+        'u': u_stat,
+        'p': p_value,
+    }
