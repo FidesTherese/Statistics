@@ -573,3 +573,67 @@ def mann_whitney_u_test(dt1: list, dt2: list):
         'u': u_stat,
         'p': p_value,
     }
+
+# Wilcoxon Signed Rank Test
+def wilcoxon_signed_rank_test(dt1: list, dt2: list):
+    # Ranking
+    def get_rank(dt: list):
+        sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
+        ranks = [0] * len(dt)
+
+        i = 0
+        while i < len(sorted_dt):
+            j = i
+            while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
+                j += 1
+                avg_rank = (i + j + 2) / 2
+                for k in range(i, j + 1):
+                    ranks[sorted_dt[k][1]] = avg_rank
+            i = j + 1
+        
+        return ranks
+    
+    from math import sqrt, inf
+    from scipy.integrate import quad
+
+    # Calculate the difference and remove those equal to zero
+    diffs = [a - b for a, b in zip(dt1, dt2)]
+    filtered_diffs = [d for d in diffs if d != 0]
+    n = len(filtered_diffs)
+
+    # When two variables are indifferent
+    if n == 0:
+        return {
+            'w': 0.0,
+            'p': 1.0,
+        }
+    
+    # Ranking the absolute value
+    abs_diffs = [abs(d) for d in filtered_diffs]
+    ranks = get_rank(abs_diffs)
+
+    # Calculate the sum of ranks for both the plus and the minus
+    w_plus = 0
+    w_minus = 0
+    for i in range(n):
+        if filtered_diffs[i] > 0:
+            w_plus += ranks[i]
+        else:
+            w_minus += ranks[i]
+        
+    w_stat = min(w_plus, w_minus)
+
+    # Approximation by Z-distribution
+    mu_w = n * (n + 1) / 4
+    sigma_w = sqrt(n * (n + 1) * (2 * n + 1) / 24)
+    z_stat = (w_stat - mu_w) / sigma_w
+
+    p_val_tail, _ = quad(t_pdf_log, abs(z_stat), inf, args = (999,))
+    p_value = 2 * p_val_tail
+
+    return {
+        'w': w_stat,
+        'p': p_value,
+        'w_plus': w_plus,
+        'w_minus': w_minus
+    }
