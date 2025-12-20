@@ -637,3 +637,61 @@ def wilcoxon_signed_rank_test(dt1: list, dt2: list):
         'w_plus': w_plus,
         'w_minus': w_minus
     }
+
+# Kruskal-Wallis Test
+def kruskal_wallis_test(*groups):
+    # Ranking
+    def get_rank(dt: list):
+        sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
+        ranks = [0] * len(dt)
+
+        i = 0
+        while i < len(sorted_dt):
+            j = i
+            while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
+                j += 1
+                avg_rank = (i + j + 2) / 2
+                for k in range(i, j + 1):
+                    ranks[sorted_dt[k][1]] = avg_rank
+            i = j + 1
+        
+        return ranks
+    
+    from math import inf
+    from scipy.integrate import quad
+
+    all_data = []
+    group_info = [] # Length for each group
+    for g in groups:
+        all_data.extend(g)
+        group_info.append(len(g))
+    
+    N = len(all_data)
+    k = len(groups)
+
+    all_ranks = get_rank(all_data)
+
+    # Calculate sum of rank for each group
+    rank_sums = []
+    current_pos = 0
+    for length in group_info:
+        group_ranks = all_ranks[current_pos: current_pos + length]
+        rank_sums.append(sum(group_ranks))
+        current_pos += length
+    
+    # Calculate H-statisitc
+    sum_sq_rank_div_n = 0
+    for Ri, ni in zip(rank_sums, group_info):
+        sum_sq_rank_div_n += (Ri**2) / ni
+    
+    h_stat = (12 / (N * (N + 1))) * sum_sq_rank_div_n - 3 * (N + 1)
+
+    # Calculate p-value
+    df = k - 1
+    p_value, _ = quad(chi_square_pdf, h_stat, inf, args = (df,))
+
+    return {
+        'h': h_stat,
+        'p': p_value,
+        'df': df
+    }
