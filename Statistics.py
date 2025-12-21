@@ -695,3 +695,42 @@ def kruskal_wallis_test(*groups):
         'p': p_value,
         'df': df
     }
+
+# Post Hoc Test (Bonferroni)
+def post_hoc_bonferroni(*groups: list, method = 't_test'):
+    from itertools import combinations
+
+    k = len(groups)
+    pairs = list(combinations(range(k), 2))
+    m = len(pairs)
+    alpha = 0.05
+    adj_alpha = alpha / m
+
+    results = []
+
+    # Post hoc
+    for i, j in pairs:
+        g1, g2 = groups[i], groups[j]
+
+        if method == 't_test':
+            temp_res = t_test(g1, g2, type = 'independent')
+            p_val = temp_res['p']
+        elif method == 'mwu':
+            temp_res = mann_whitney_u_test(g1, g2)
+            p_val = temp_res['p']
+        else:
+            raise ValueError('Only t_test and mwu are valid type!')
+        
+        # Significance
+        isSig = p_val < adj_alpha
+
+        results.append(
+            {
+                'pair': (i+1, j+1),
+                'p': p_val,
+                'adj_alpha': adj_alpha,
+                'is_sig': isSig
+            }
+        )
+    
+    return results
