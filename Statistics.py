@@ -86,6 +86,24 @@ def quatiles(dt: list):
         # Return
         return quatile_upper, quatile_lower
 
+# Ranking
+def get_rank(dt: list):
+    sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
+    ranks = [0] * len(dt)
+
+    i = 0
+    while i < len(sorted_dt):
+        j = i
+        while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
+            j += 1
+
+        avg_rank = (i + j + 2) / 2
+        for k in range(i, j + 1):
+            ranks[sorted_dt[k][1]] = avg_rank
+        i = j + 1
+        
+    return ranks
+
 # Mode
 def mode(dt: list):
     from collections import Counter
@@ -173,12 +191,19 @@ def pearson_corr(x: list, y: list):
 
     # Result
     denominator = sqrt(x_sq_deviation * y_sq_deviation)
-    result = numerator / denominator
+    if denominator == 0:
+        result = 0.0
+    else:
+        result = numerator / denominator
 
     # Significant
-    t_stat = (result * sqrt(len(x) - 2)) / sqrt(1 - result**2)
+    if abs(result) >= 1.0:
+        t_stat = 1e15 # To avoid zero division error
+    else:
+        t_stat = (result * sqrt(len(x) - 2)) / sqrt(1 - result**2)
+
     df = len(x) - 2
-    p_val_tail, _ = quad(t_pdf, abs(t_stat), inf, args = (df,))
+    p_val_tail, _ = quad(t_pdf_log, abs(t_stat), inf, args = (df,))
     sig_xy = 2 * p_val_tail
 
     return result, sig_xy
@@ -529,23 +554,6 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
 
 # Mann-Whitney U Test
 def mann_whitney_u_test(dt1: list, dt2: list):
-    # Ranking
-    def get_rank(dt: list):
-        sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
-        ranks = [0] * len(dt)
-
-        i = 0
-        while i < len(sorted_dt):
-            j = i
-            while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
-                j += 1
-                avg_rank = (i + j + 2) / 2
-                for k in range(i, j + 1):
-                    ranks[sorted_dt[k][1]] = avg_rank
-            i = j + 1
-        
-        return ranks
-    
     # Mann-Whitney
     from math import sqrt, inf
     from scipy.integrate import quad
@@ -576,23 +584,6 @@ def mann_whitney_u_test(dt1: list, dt2: list):
 
 # Wilcoxon Signed Rank Test
 def wilcoxon_signed_rank_test(dt1: list, dt2: list):
-    # Ranking
-    def get_rank(dt: list):
-        sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
-        ranks = [0] * len(dt)
-
-        i = 0
-        while i < len(sorted_dt):
-            j = i
-            while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
-                j += 1
-                avg_rank = (i + j + 2) / 2
-                for k in range(i, j + 1):
-                    ranks[sorted_dt[k][1]] = avg_rank
-            i = j + 1
-        
-        return ranks
-    
     from math import sqrt, inf
     from scipy.integrate import quad
 
@@ -640,23 +631,6 @@ def wilcoxon_signed_rank_test(dt1: list, dt2: list):
 
 # Kruskal-Wallis Test
 def kruskal_wallis_test(*groups):
-    # Ranking
-    def get_rank(dt: list):
-        sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
-        ranks = [0] * len(dt)
-
-        i = 0
-        while i < len(sorted_dt):
-            j = i
-            while (j < len(sorted_dt) - 1) and (sorted_dt[j+1][0] == sorted_dt[j][0]):
-                j += 1
-                avg_rank = (i + j + 2) / 2
-                for k in range(i, j + 1):
-                    ranks[sorted_dt[k][1]] = avg_rank
-            i = j + 1
-        
-        return ranks
-    
     from math import inf
     from scipy.integrate import quad
 
@@ -734,3 +708,21 @@ def post_hoc_bonferroni(*groups: list, method = 't_test'):
         )
     
     return results
+
+# Spearman's Rank Correlation Coefficient
+def spearman_corr(x: list, y: list):
+    # Get length info
+    if len(x) != len(y):
+        raise ValueError('Length of x and y must be equal!')
+
+    # Ranking
+    rank_x = get_rank(x)
+    rank_y = get_rank(y)
+
+    # Spearman
+    rho, p_value = pearson_corr(rank_x, rank_y)
+
+    return {
+        'rho': rho,
+        'p': p_value
+    }
