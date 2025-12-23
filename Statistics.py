@@ -726,3 +726,33 @@ def spearman_corr(x: list, y: list):
         'rho': rho,
         'p': p_value
     }
+
+# Logistic Regression
+def logistic_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matrix and y is a vector
+    import numpy as np
+
+    # Design matrix
+    n_samples, n_features = X.shape
+    X_design = np.hstack([np.ones((n_samples, 1)), X])
+    weights = np.zeros(n_features + 1)
+
+    # Sigmoid function
+    def sigmoid(z: float):
+        return 1 / (1 + np.exp(-z))
+    
+    # Gradient
+    for _ in range(iterations):
+        model = np.dot(X_design, weights)
+        predictions = sigmoid(model)
+
+        # Calculate gradient
+        gradient = np.dot(X_design.T, (predictions - y)) / n_samples
+
+        # Update weights
+        weights -= lr * gradient
+
+    return {
+        'beta': weights,
+        'pred_prob': lambda new_X: sigmoid(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)),
+        'pred': lambda new_X: (sigmoid(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)) >= 0.5).astype(int)
+    }
