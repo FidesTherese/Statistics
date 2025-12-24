@@ -756,3 +756,51 @@ def logistic_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matr
         'pred_prob': lambda new_X: sigmoid(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)),
         'pred': lambda new_X: (sigmoid(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)) >= 0.5).astype(int)
     }
+
+# ROC AUC
+def roc_auc(y_true, y_probs):
+    import numpy as np
+
+    # Zip the labels and probabilities together and sort by probabilities
+    y_true = np.array(y_true).ravel()
+    y_probs = np.array(y_probs).ravel()
+
+    indices = np.argsort(y_probs)[::-1]
+    y_probs = y_probs[indices]
+    y_true = y_true[indices]
+
+    # Initialize statistic
+    tp = 0
+    fp = 0
+    total_pos = sum(y_true)
+    total_neg = len(y_true) - total_pos
+    
+    # Coordinate points of ROC curve
+    roc_points = [(0, 0)]
+    auc = 0.0
+    prev_fpr = 0.0
+    prev_tpr = 0.0
+
+    # Traverse the data, dynamically adjust the shreshold
+    for i in range(len(y_true)):
+        if y_true[i] == 1:
+            tp += 1
+        else:
+            fp += 1
+
+        # Calculate current TPR and FPR
+        if i == len(y_true) - 1 or y_probs[i] != y_probs[i + 1]:
+            current_tpr = tp / total_pos
+            current_fpr = fp / total_neg
+
+            # Calculate AUC using trapezoidal rule
+            auc += (current_tpr + prev_tpr) * (current_fpr - prev_fpr) / 2
+        
+            roc_points.append((current_fpr, current_tpr))
+            prev_fpr = current_fpr
+            prev_tpr = current_tpr
+
+    return {
+        'roc_points': roc_points,
+        'auc': auc
+    }
