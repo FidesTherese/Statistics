@@ -804,3 +804,27 @@ def roc_auc(y_true, y_probs):
         'roc_points': roc_points,
         'auc': auc
     }
+
+# Plot ROC curve (optional)
+def plot_roc_curve(roc_results):
+    import matplotlib.pyplot as plt
+
+    # Parameters
+    fpr = [point[0] for point in roc_results['roc_points']]
+    tpr = [point[1] for point in roc_results['roc_points']]
+    auc = roc_results['auc']
+
+    # Plot
+    plt.figure()
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.plot(fpr, tpr, color='blue', label=f'ROC curve (AUC = {auc:.4f})')
+    plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random Guessing')
+    plt.xlabel('False Positive Rate (FPR)')
+    plt.ylabel('True Positive Rate (TPR)')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc='lower right')
+    plt.grid()
+    plt.show()
+
+    return None
