@@ -828,3 +828,36 @@ def plot_roc_curve(roc_results):
     plt.show()
 
     return None
+
+# Power Method
+def power_method(matrix, iterations=1000, tolerance=1e-10):
+    import numpy as np
+
+    # Check if matrix is square
+    n, m = matrix.shape
+    if n != m:
+        raise ValueError('Matrix must be square!')
+
+    # Initialize the vector
+    b_k = np.ones(n)
+
+    # Power iteration
+    for _ in range(iterations):
+        # Calculate the matrix-by-vector product
+        b_k1 = np.dot(matrix, b_k) # Ax
+
+        # Normalize the vector
+        b_k1_norm = np.linalg.norm(b_k1) # ||Ax||
+        b_k1 = b_k1 / b_k1_norm # (Ax) / ||Ax||
+
+        # Check for convergence
+        if np.linalg.norm(b_k1 - b_k) < tolerance:
+            break
+
+        b_k = b_k1
+
+    # Rayleigh quotient for eigenvalue
+    eigenvalue = np.dot(b_k.T, np.dot(matrix, b_k)) / np.dot(b_k.T, b_k) # (b^T * A * b) / (b^T * b)
+
+    # Return eigenvalue and eigenvector (b_k)
+    return eigenvalue, b_k
