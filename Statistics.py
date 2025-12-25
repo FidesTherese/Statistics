@@ -861,3 +861,44 @@ def power_method(matrix, iterations=1000, tolerance=1e-10):
 
     # Return eigenvalue and eigenvector (b_k)
     return eigenvalue, b_k
+
+# Helper function for softmax
+def _softmax(z):
+    import numpy as np
+    exp_z = np.exp(z - np.max(z, axis=1, keepdims=True)) # For numerical stability
+    return exp_z / np.sum(exp_z, axis=1, keepdims=True)
+
+# Multinomial Logistic Regression
+def softmax_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matrix and y is a vector of class labels
+    import numpy as np
+
+    X = np.array(X)
+    y = np.array(y).ravel()
+
+    # Design matrix
+    n_samples, n_features = X.shape
+    n_classes = np.unique(y).size
+    X_design = np.hstack([np.ones((n_samples, 1)), X])
+
+    # Initialize weights with zeros
+    weights = np.zeros((n_features + 1, n_classes))
+
+    # One-hot encode the labels
+    y_one_hot = np.eye(n_classes)[y]
+
+    # Gradient Descent
+    for _ in range(iterations):
+        scores = np.dot(X_design, weights) # Linear scores
+        exp_scores = np.exp(scores - np.max(scores, axis=1, keepdims=True)) # For numerical stability
+        probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) # Softmax probabilities
+
+        # Calculate gradient
+        gradient = np.dot(X_design.T, (probs - y_one_hot)) / n_samples
+        # Update weights
+        weights -= lr * gradient
+
+        return {
+        'beta': weights,
+        'pred_prob': lambda new_X: _softmax(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)),
+        'pred': lambda new_X: np.argmax(_softmax(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)), axis=1)
+        }
