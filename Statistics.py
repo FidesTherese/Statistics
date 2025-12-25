@@ -902,3 +902,34 @@ def softmax_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matri
         'pred_prob': lambda new_X: _softmax(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)),
         'pred': lambda new_X: np.argmax(_softmax(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)), axis=1)
         }
+    
+# Ridge Regression
+def ridge_regression(X, Y, alpha = 1.0): # Where X is a matrix and Y is a vector
+    import numpy as np
+
+    # Get dimensions of the data
+    n_samples, n_features = X.shape
+
+    # Design matrix
+    X_design = np.hstack([np.ones((n_samples, 1)), X])
+
+    # L2 penalty matrix
+    penalty_matrix = np.eye(n_features + 1)
+    penalty_matrix[0, 0] = 0 # No penalty for intercept
+
+    # Analytical solution
+    xtx = X_design.T @ X_design
+    # Add L2 regularization term
+    xtx_regularized = xtx + alpha * penalty_matrix
+
+    # Due to regularization, the matrix is guaranteed to be invertible
+    # Inverse
+    xtx_inv = np.linalg.inv(xtx_regularized)
+
+    # Beta coefficients
+    beta = xtx_inv @ X_design.T @ Y
+
+    return {
+        'beta': beta.flatten(),
+        'pred': lambda new_X: np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), beta)
+    }
