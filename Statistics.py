@@ -933,3 +933,66 @@ def ridge_regression(X, Y, alpha = 1.0): # Where X is a matrix and Y is a vector
         'beta': beta.flatten(),
         'pred': lambda new_X: np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), beta)
     }
+
+# Lasso Regression (Coordinate Descent)
+def lasso_regression(X, y, alpha = 1.0, iterations = 1000, tol = 1e-4):
+    '''
+    Lasso Regression Parameters:
+        param X: A matrix of features (beta_1, beta_2, ..., beta_n)
+        param y: A vector of results
+        param alpha: Regularization strength
+        param iterations: Number of iterations for coordinate descent
+        param tol: Tolerance for convergence
+    '''
+    import numpy as np
+
+    # Standardization
+    X_mean = np.mean(X, axis=0)
+    X_std = np.std(X, axis=0)
+    # Avoid division by zero
+    X_std[X_std == 0] = 1
+    X_scaled = (X - X_mean) / X_std
+
+    # Get dimensions of the data
+    n_samples, n_features = X_scaled.shape
+    beta = np.zeros(n_features + 1) # Including intercept
+    X_design = np.hstack([np.ones((n_samples, 1)), X_scaled]) # Design matrix with intercept
+    column_sq_sum = np.sum(X_design**2, axis=0) # Precompute column squared sums
+
+    # Coordinate Descent
+    for _ in range(iterations):
+        beta_old = beta.copy() # Store old beta for convergence check
+
+        # Coordinate update for each coefficient (feature)
+        for j in range(n_features + 1):
+            # Residual
+            y_pred = X_design @ beta # Current prediction
+            # Partial residual excluding feature j
+            residual = y - (y_pred - X_design[:, j] * beta[j])
+            # Rho
+            rho = np.dot(X_design[:, j], residual)
+
+            # Soft-thresholding
+            if j == 0: # Intercept term
+                beta[j] = rho / n_samples
+            else:
+                if rho < -alpha:
+                    beta[j] = (rho + alpha) / column_sq_sum[j]
+                elif rho > alpha:
+                    beta[j] = (rho - alpha) / column_sq_sum[j]
+                else:
+                    beta[j] = 0.0
+            
+            # Check for convergence
+            if np.linalg.norm(beta - beta_old) < tol:
+                break
+
+    # Rescale coefficients back to original scale
+    beta_final = np.zeros(n_features + 1)
+    beta_final[1:] = beta[1:] / X_std
+    beta_final[0] = beta[0] - np.dot(beta_final[1:], X_mean)
+
+    return {
+        'beta': beta_final,
+        'pred': lambda new_X: np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), beta_final)
+    }
