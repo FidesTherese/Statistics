@@ -897,11 +897,11 @@ def softmax_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X is
         # Update weights
         weights -= lr * gradient
 
-        return {
+    return {
         'beta': weights,
         'pred_prob': lambda new_X: _softmax(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)),
         'pred': lambda new_X: np.argmax(_softmax(np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), weights)), axis=1)
-        }
+    }
     
 # Ridge Regression
 def ridge_regression(X, Y, alpha = 1.0) -> dict: # Where X is a matrix and Y is a vector
@@ -995,4 +995,48 @@ def lasso_regression(X, y, alpha = 1.0, iterations = 1000, tol = 1e-4) -> dict:
     return {
         'beta': beta_final,
         'pred': lambda new_X: np.dot(np.hstack([np.ones((new_X.shape[0], 1)), new_X]), beta_final)
+    }
+
+# Principal Component Analysis (PCA)
+def pca(X, n_components: int) -> dict:
+    '''
+    PCA Parameters:
+        param X: A matrix of features (beta_1, beta_2, ..., beta_n)
+        param n_components: Number of principal components to retain
+    '''
+    import numpy as np
+
+    # Centering the data (Standardization)
+    # Mean for each feature (column)
+    X_mean = np.mean(X, axis=0)
+    # Centered data
+    X_centered = X - X_mean
+
+    # Covariance matrix
+    cov_matrix = np.cov(X_centered, rowvar=False)
+
+    # Finding eigenvectors using deflation and power method
+    eigenvalues = []
+    eigenvectors = []
+    curr_matrix = cov_matrix.copy() # Copy of covariance matrix for deflation
+
+    for _ in range(n_components):
+        val, vec = power_method(curr_matrix)
+        eigenvalues.append(val)
+        eigenvectors.append(vec)
+
+        # Deflation
+        curr_matrix = curr_matrix - val * np.outer(vec, vec)
+
+    components = np.array(eigenvectors).T # Each column is an eigenvector
+    loadings = components * np.sqrt(np.array(eigenvalues)) # Loadings
+
+    # Project data onto principal components
+    X_pca = X_centered @ components
+
+    return {
+        'components': components,
+        'explained_variance': eigenvalues,
+        'transformed_data': X_pca,
+        'loadings': loadings
     }
