@@ -1,5 +1,5 @@
 # Mean
-def mean(dt: list):
+def mean(dt: list) -> float:
     n = len(dt)
     summ = 0
     for i in range(n):
@@ -8,7 +8,7 @@ def mean(dt: list):
     return result
 
 # Variance
-def variance(dt: list, type: str = 'sample'):
+def variance(dt: list, type: str = 'sample') -> float:
     dt_mean = mean(dt)
     n = len(dt)
 
@@ -28,7 +28,7 @@ def variance(dt: list, type: str = 'sample'):
         raise ValueError('Only sample and population are valid type!')
 
 # Standard Deviation
-def std(dt: list, type: str = 'sample'):
+def std(dt: list, type: str = 'sample') -> float:
     from math import sqrt
 
     if type == 'sample':
@@ -41,7 +41,7 @@ def std(dt: list, type: str = 'sample'):
         raise ValueError('Only sample and population are valid type!')
 
 # Median
-def median(dt: list):
+def median(dt: list) -> float:
     n = len(dt)
     dt = sorted(dt)
 
@@ -58,7 +58,7 @@ def median(dt: list):
         return median
 
 # Quatiles
-def quatiles(dt: list):
+def quatiles(dt: list) -> tuple:
     n = len(dt)
     dt = sorted(dt)
 
@@ -87,7 +87,7 @@ def quatiles(dt: list):
         return quatile_upper, quatile_lower
 
 # Ranking
-def get_rank(dt: list):
+def get_rank(dt: list) -> list:
     sorted_dt = sorted([(val, i) for i, val in enumerate(dt)])
     ranks = [0] * len(dt)
 
@@ -105,7 +105,7 @@ def get_rank(dt: list):
     return ranks
 
 # Mode
-def mode(dt: list):
+def mode(dt: list) -> float:
     from collections import Counter
     counts = Counter(dt)
     max_count = max(counts, key = counts.get)
@@ -113,7 +113,7 @@ def mode(dt: list):
     return max_count
 
 # Range
-def dt_range(dt: list):
+def dt_range(dt: list) -> float:
     dt = sorted(dt)
     maximum = dt[-1]
     minimum = dt[0]
@@ -122,7 +122,7 @@ def dt_range(dt: list):
     return result
 
 # Coefficient of Variance
-def coefficient_of_variance(dt: list, type: str):
+def coefficient_of_variance(dt: list, type: str) -> float:
     # Std if sample
     if type == 'sample':
         sd = std(dt, type)
@@ -140,7 +140,7 @@ def coefficient_of_variance(dt: list, type: str):
     return CoV
 
 # Gamma Function
-def gamma_function(z: float):
+def gamma_function(z: float) -> float:
     import numpy as np
     from scipy.integrate import quad
 
@@ -157,14 +157,14 @@ def gamma_function(z: float):
     return result
 
 # T-distribution PDF
-def t_pdf(t_value: float, df: float):
+def t_pdf(t_value: float, df: float) -> float:
     from math import pi, sqrt
     PDF_t = gamma_function((df + 1) / 2) / (sqrt(pi * df) * gamma_function(df / 2)) * (1 + (t_value**2 / df))**(-(df + 1) / 2)
 
     return PDF_t
 
 # Pearson Correlation Coefficient
-def pearson_corr(x: list, y: list):
+def pearson_corr(x: list, y: list) -> tuple:
     from math import sqrt, inf
     from scipy.integrate import quad
     x_mean = mean(x)
@@ -209,7 +209,7 @@ def pearson_corr(x: list, y: list):
     return result, sig_xy
 
 # F-distribution PDF
-def f_PDF(f_stat: float, df_between: float, df_within: float):
+def f_PDF(f_stat: float, df_between: float, df_within: float) -> float:
     from math import sqrt
     
     a = df_between / 2
@@ -225,7 +225,7 @@ def f_PDF(f_stat: float, df_between: float, df_within: float):
         return PDF_f
 
 # ANOVA
-def anova(*groups):
+def anova(*groups) -> tuple:
     from math import sqrt, inf
     from scipy.integrate import quad
 
@@ -267,7 +267,7 @@ def anova(*groups):
     return f_stat, p_value
 
 # Chi-Square Distribution PDF
-def chi_square_pdf(x: float, df: float):
+def chi_square_pdf(x: float, df: float) -> float:
     from math import exp
 
     # Check the length of data (for numerical integration)
@@ -284,7 +284,7 @@ def chi_square_pdf(x: float, df: float):
     return chi_pdf
 
 # Chi-Square Test
-def chi_square_test(observed: list, expected: list):
+def chi_square_test(observed: list, expected: list) -> float:
     from math import inf
     from scipy.integrate import quad
 
@@ -299,7 +299,7 @@ def chi_square_test(observed: list, expected: list):
     return p_value
 
 # Logarithmic Gamma Function
-def log_gamma_function(z: float):
+def log_gamma_function(z: float) -> float:
     import numpy as np
     if z <= 0:
         raise ValueError('Parameter z must be greater than zero.')
@@ -314,7 +314,7 @@ def log_gamma_function(z: float):
         return log_gamma
     
 # Logarithmic T-Distribution PDF
-def t_pdf_log(t: float, df: float):
+def t_pdf_log(t: float, df: float) -> float:
     import numpy as np
     ln_numerator = log_gamma_function((df + 1) / 2)
     ln_denominator = log_gamma_function(df / 2) + 0.5 * np.log(df * np.pi)
@@ -324,7 +324,7 @@ def t_pdf_log(t: float, df: float):
     return np.exp(ln_t_pdf)
 
 # Multiple Linear Regression
-def lm(X, Y): # Where X is a matrix and Y is a vector, using NDArray format
+def lm(X, Y) -> dict: # Where X is a matrix and Y is a vector, using NDArray format
     import numpy as np
     from scipy.integrate import quad
     from math import inf
@@ -373,7 +373,7 @@ def lm(X, Y): # Where X is a matrix and Y is a vector, using NDArray format
     }
 
 # Levene's Homoscedasticity Test
-def levene_homoscedasticity_test(*groups, center = 'median'):
+def levene_homoscedasticity_test(*groups, center = 'median') -> dict:
     import numpy as np
     z_groups = []
     for g in groups:
@@ -396,7 +396,7 @@ def levene_homoscedasticity_test(*groups, center = 'median'):
         }
 
 # T-test
-def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
+def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0) -> dict:
     def one_way_t_test(dt, mu):
         from math import sqrt, inf
         from scipy.integrate import quad
@@ -417,7 +417,7 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
             'df': df,
         }
     
-    def independent_t_test(dt1: list, dt2: list):
+    def independent_t_test(dt1: list, dt2: list) -> dict:
         levene_result = levene_homoscedasticity_test(dt1, dt2)
         if levene_result['levene_p'] < 0.05:
             # Data is not homodastic, then use Welth's t-test instead
@@ -469,7 +469,7 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
                 'df': df
             }
         
-    def paired_t_test(dt1: list, dt2: list):
+    def paired_t_test(dt1: list, dt2: list) -> dict:
         if len(dt1) != len(dt2):
             raise ValueError('Length of two variables must be equal when applying paired t-test!')
         
@@ -553,7 +553,7 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0):
         raise ValueError('Only oneway, independent, paired and yuen are valid type!')
 
 # Mann-Whitney U Test
-def mann_whitney_u_test(dt1: list, dt2: list):
+def mann_whitney_u_test(dt1: list, dt2: list) -> dict:
     # Mann-Whitney
     from math import sqrt, inf
     from scipy.integrate import quad
@@ -583,7 +583,7 @@ def mann_whitney_u_test(dt1: list, dt2: list):
     }
 
 # Wilcoxon Signed Rank Test
-def wilcoxon_signed_rank_test(dt1: list, dt2: list):
+def wilcoxon_signed_rank_test(dt1: list, dt2: list) -> dict:
     from math import sqrt, inf
     from scipy.integrate import quad
 
@@ -630,7 +630,7 @@ def wilcoxon_signed_rank_test(dt1: list, dt2: list):
     }
 
 # Kruskal-Wallis Test
-def kruskal_wallis_test(*groups):
+def kruskal_wallis_test(*groups) -> dict:
     from math import inf
     from scipy.integrate import quad
 
@@ -671,7 +671,7 @@ def kruskal_wallis_test(*groups):
     }
 
 # Post Hoc Test (Bonferroni)
-def post_hoc_bonferroni(*groups: list, method = 't_test'):
+def post_hoc_bonferroni(*groups: list, method = 't_test') -> list:
     from itertools import combinations
 
     k = len(groups)
@@ -710,7 +710,7 @@ def post_hoc_bonferroni(*groups: list, method = 't_test'):
     return results
 
 # Spearman's Rank Correlation Coefficient
-def spearman_corr(x: list, y: list):
+def spearman_corr(x: list, y: list) -> dict:
     # Get length info
     if len(x) != len(y):
         raise ValueError('Length of x and y must be equal!')
@@ -728,7 +728,7 @@ def spearman_corr(x: list, y: list):
     }
 
 # Logistic Regression
-def logistic_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matrix and y is a vector
+def logistic_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X is a matrix and y is a vector
     import numpy as np
 
     # Design matrix
@@ -758,7 +758,7 @@ def logistic_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matr
     }
 
 # ROC AUC
-def roc_auc(y_true, y_probs):
+def roc_auc(y_true, y_probs) -> dict:
     import numpy as np
 
     # Zip the labels and probabilities together and sort by probabilities
@@ -806,7 +806,7 @@ def roc_auc(y_true, y_probs):
     }
 
 # Plot ROC curve (optional)
-def plot_roc_curve(roc_results):
+def plot_roc_curve(roc_results) -> None:
     import matplotlib.pyplot as plt
 
     # Parameters
@@ -830,7 +830,7 @@ def plot_roc_curve(roc_results):
     return None
 
 # Power Method
-def power_method(matrix, iterations=1000, tolerance=1e-10):
+def power_method(matrix, iterations=1000, tolerance=1e-10) -> tuple:
     import numpy as np
 
     # Check if matrix is square
@@ -869,7 +869,7 @@ def _softmax(z):
     return exp_z / np.sum(exp_z, axis=1, keepdims=True)
 
 # Multinomial Logistic Regression
-def softmax_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matrix and y is a vector of class labels
+def softmax_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X is a matrix and y is a vector of class labels
     import numpy as np
 
     X = np.array(X)
@@ -904,7 +904,7 @@ def softmax_regression(X, y, lr = 0.01, iterations = 1500): # Where X is a matri
         }
     
 # Ridge Regression
-def ridge_regression(X, Y, alpha = 1.0): # Where X is a matrix and Y is a vector
+def ridge_regression(X, Y, alpha = 1.0) -> dict: # Where X is a matrix and Y is a vector
     import numpy as np
 
     # Get dimensions of the data
@@ -935,7 +935,7 @@ def ridge_regression(X, Y, alpha = 1.0): # Where X is a matrix and Y is a vector
     }
 
 # Lasso Regression (Coordinate Descent)
-def lasso_regression(X, y, alpha = 1.0, iterations = 1000, tol = 1e-4):
+def lasso_regression(X, y, alpha = 1.0, iterations = 1000, tol = 1e-4) -> dict:
     '''
     Lasso Regression Parameters:
         param X: A matrix of features (beta_1, beta_2, ..., beta_n)
