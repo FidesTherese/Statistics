@@ -1040,3 +1040,25 @@ def pca(X, n_components: int) -> dict:
         'transformed_data': X_pca,
         'loadings': loadings
     }
+
+# Permutation and Combination
+def permutation_combination(n: int, r: int, type: str = 'permutation') -> int:
+    # Define helpers function
+    def permutation(n: int, r: int) -> int:
+        # Here use round to avoid the situation where the result is like x.99999...
+        p = round(((gamma_function(n + 1)) / (gamma_function((n - r) + 1))), 0)
+        return p
+    
+    def combination(n: int, r: int) -> int:
+        p = round(((gamma_function(n + 1)) / (gamma_function(r + 1) * gamma_function((n - r) + 1))), 0)
+        return p
+    
+    # Decide which helper function to use
+    if type == 'permutation':
+        result = permutation(n, r)
+        return result
+    elif type == 'combination':
+        result = combination(n, r)
+        return result
+    else:
+        raise ValueError('Only permutation and combination are valid type!')
