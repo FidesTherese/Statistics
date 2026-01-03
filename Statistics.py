@@ -1064,7 +1064,7 @@ def permutation_combination(n: int, r: int, type: str = 'permutation') -> int:
         raise ValueError('Only permutation and combination are valid type!')
     
 # Portfolio Optimization
-def portfolio_optimization(returns_matrix, n_portfolios: int = 10000, risk_free_rate: float = 0.04):
+def portfolio_optimization(returns_matrix, n_portfolios: int = 10000, risk_free_rate: float = 0.04) -> dict:
     '''
     Optimize the portfolio by Monte Carlo simulation:
         param returns_matrix: a matrix containing historical returns for each asset, s.t. (n_days, n_assets)
