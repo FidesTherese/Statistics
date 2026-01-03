@@ -1062,3 +1062,60 @@ def permutation_combination(n: int, r: int, type: str = 'permutation') -> int:
         return result
     else:
         raise ValueError('Only permutation and combination are valid type!')
+    
+# Portfolio Optimization
+def portfolio_optimization(returns_matrix, n_portfolios: int = 10000, risk_free_rate: float = 0.04):
+    '''
+    Optimize the portfolio by Monte Carlo simulation:
+        param returns_matrix: a matrix containing historical returns for each asset, s.t. (n_days, n_assets)
+        param n_portfolios: how many times we run Monte Carlo simulation
+        param risk_free_rate: risk-free interest rate (spot rate)
+    '''
+    import numpy as np
+
+    # 1. Basic Statistics
+    # 1.1 Expected Returns for Each Asset
+    mean_returns = np.mean(returns_matrix, axis = 0) # Calculate mean for each column
+    # 1.2 Covariance Matrix
+    cov_matrix = np.cov(returns_matrix, rowvar = False)
+    # 1.3 Number of Assets
+    n_assets = len(mean_returns)
+    # 1.4 Container of Results
+    results = np.zeros((3, n_portfolios))
+    weights_record = []
+
+    # 2. Random Simulation Loop
+    for i in range(n_portfolios):
+        # 2.1.1 Randomly Generate Weights
+        weights = np.random.random(n_assets)
+        # 2.1.2 Normalization
+        weights = weights / np.sum(weights)
+        weights_record.append(weights)
+
+        # 2.2 Portfolio Expected Return
+        portfolio_return = weights.T @ mean_returns
+        portfolio_return = portfolio_return * 252
+
+        # 2.3 Portfolio Volatility
+        portfolio_volatility = np.sqrt(weights.T @ cov_matrix @ weights)
+        portfolio_volatility = portfolio_volatility * np.sqrt(252)
+
+        # 2.4 Sharpe Ratio
+        sharpe_ratio = (portfolio_return - risk_free_rate) / portfolio_volatility
+
+        # 2.5 Save Results
+        results[0, i] = portfolio_return
+        results[1, i] = portfolio_volatility
+        results[2, i] = sharpe_ratio
+
+    # 3. Maximum Sharpe Ratio
+    max_sharpe_index = np.argmax(results[2])
+    best_weights = weights_record[max_sharpe_index]
+
+    return {
+        'max_sr': results[2, max_sharpe_index],
+        'optimal_return': results[0, max_sharpe_index],
+        'optimal_risk': results[1, max_sharpe_index],
+        'optimal_weights': best_weights,
+        'all_results': results
+    }
