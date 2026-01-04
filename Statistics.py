@@ -1,3 +1,12 @@
+# Import Packages
+import numpy as np
+from math import sqrt, inf, pi, exp
+from scipy.integrate import quad
+from collections import Counter
+from scipy.stats import t
+from itertools import combinations
+import matplotlib.pyplot as plt
+
 # Mean
 def mean(dt: list) -> float:
     n = len(dt)
@@ -29,8 +38,6 @@ def variance(dt: list, type: str = 'sample') -> float:
 
 # Standard Deviation
 def std(dt: list, type: str = 'sample') -> float:
-    from math import sqrt
-
     if type == 'sample':
         result = sqrt(variance(dt, type))
         return result
@@ -106,7 +113,6 @@ def get_rank(dt: list) -> list:
 
 # Mode
 def mode(dt: list) -> float:
-    from collections import Counter
     counts = Counter(dt)
     max_count = max(counts, key = counts.get)
 
@@ -141,9 +147,6 @@ def coefficient_of_variance(dt: list, type: str) -> float:
 
 # Gamma Function
 def gamma_function(z: float) -> float:
-    import numpy as np
-    from scipy.integrate import quad
-
     if z <= 0:
         raise ValueError('Parameter z must be greater than zero!')
 
@@ -158,15 +161,12 @@ def gamma_function(z: float) -> float:
 
 # T-distribution PDF
 def t_pdf(t_value: float, df: float) -> float:
-    from math import pi, sqrt
     PDF_t = gamma_function((df + 1) / 2) / (sqrt(pi * df) * gamma_function(df / 2)) * (1 + (t_value**2 / df))**(-(df + 1) / 2)
 
     return PDF_t
 
 # Pearson Correlation Coefficient
 def pearson_corr(x: list, y: list) -> tuple:
-    from math import sqrt, inf
-    from scipy.integrate import quad
     x_mean = mean(x)
     y_mean = mean(y)
 
@@ -210,8 +210,6 @@ def pearson_corr(x: list, y: list) -> tuple:
 
 # F-distribution PDF
 def f_PDF(f_stat: float, df_between: float, df_within: float) -> float:
-    from math import sqrt
-    
     a = df_between / 2
     b = df_within / 2
     beta = (gamma_function(a) * gamma_function(b)) / gamma_function(a + b)
@@ -226,9 +224,6 @@ def f_PDF(f_stat: float, df_between: float, df_within: float) -> float:
 
 # ANOVA
 def anova(*groups) -> tuple:
-    from math import sqrt, inf
-    from scipy.integrate import quad
-
     # 1. Preparation
     # Numbers of groups
     k = len(groups)
@@ -268,8 +263,6 @@ def anova(*groups) -> tuple:
 
 # Chi-Square Distribution PDF
 def chi_square_pdf(x: float, df: float) -> float:
-    from math import exp
-
     # Check the length of data (for numerical integration)
     if x <= 0:
         return 0
@@ -285,9 +278,6 @@ def chi_square_pdf(x: float, df: float) -> float:
 
 # Chi-Square Test
 def chi_square_test(observed: list, expected: list) -> float:
-    from math import inf
-    from scipy.integrate import quad
-
     chi_stat = 0
     for o, e in zip(observed, expected):
         chi_stat += (o - e)**2 / e
@@ -300,7 +290,6 @@ def chi_square_test(observed: list, expected: list) -> float:
 
 # Logarithmic Gamma Function
 def log_gamma_function(z: float) -> float:
-    import numpy as np
     if z <= 0:
         raise ValueError('Parameter z must be greater than zero.')
     
@@ -315,7 +304,6 @@ def log_gamma_function(z: float) -> float:
     
 # Logarithmic T-Distribution PDF
 def t_pdf_log(t: float, df: float) -> float:
-    import numpy as np
     ln_numerator = log_gamma_function((df + 1) / 2)
     ln_denominator = log_gamma_function(df / 2) + 0.5 * np.log(df * np.pi)
     ln_term = -((df + 1) / 2) * np.log(1 + (t**2 / df))
@@ -325,10 +313,6 @@ def t_pdf_log(t: float, df: float) -> float:
 
 # Multiple Linear Regression
 def lm(X, Y) -> dict: # Where X is a matrix and Y is a vector, using NDArray format
-    import numpy as np
-    from scipy.integrate import quad
-    from math import inf
-    
     # 1. Design matrix
     n_samples = X.shape[0]
     X_design = np.hstack([np.ones((n_samples, 1)), X])
@@ -374,7 +358,6 @@ def lm(X, Y) -> dict: # Where X is a matrix and Y is a vector, using NDArray for
 
 # Levene's Homoscedasticity Test
 def levene_homoscedasticity_test(*groups, center = 'median') -> dict:
-    import numpy as np
     z_groups = []
     for g in groups:
         g = np.array(g)
@@ -398,9 +381,6 @@ def levene_homoscedasticity_test(*groups, center = 'median') -> dict:
 # T-test
 def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0) -> dict:
     def one_way_t_test(dt, mu):
-        from math import sqrt, inf
-        from scipy.integrate import quad
-
         dt_mean = mean(dt)
         numerator = dt_mean - mu
         se = std(dt) / sqrt(len(dt))
@@ -446,9 +426,6 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0) -> dict:
             }
         else:
             # Data is homodastic, then use Student's t-test
-            from math import sqrt, inf
-            from scipy.integrate import quad
-
             dt1_mean = mean(dt1)
             dt2_mean = mean(dt2)
             dt1_var = variance(dt1)
@@ -480,9 +457,6 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0) -> dict:
         return result
     
     def yuan_welch_t_test(dt1: list, dt2: list, gamma: float):
-        import numpy as np
-        from scipy.stats import t
-
         dt1 = np.array(dt1)
         dt2 = np.array(dt2)
 
@@ -555,9 +529,6 @@ def t_test(dt1: list = [], dt2 = [], type: str = 'no', mu: float = 0) -> dict:
 # Mann-Whitney U Test
 def mann_whitney_u_test(dt1: list, dt2: list) -> dict:
     # Mann-Whitney
-    from math import sqrt, inf
-    from scipy.integrate import quad
-
     n1, n2 = len(dt1), len(dt2)
     combined = dt1 + dt2
     combined_ranks = get_rank(combined)
@@ -584,9 +555,6 @@ def mann_whitney_u_test(dt1: list, dt2: list) -> dict:
 
 # Wilcoxon Signed Rank Test
 def wilcoxon_signed_rank_test(dt1: list, dt2: list) -> dict:
-    from math import sqrt, inf
-    from scipy.integrate import quad
-
     # Calculate the difference and remove those equal to zero
     diffs = [a - b for a, b in zip(dt1, dt2)]
     filtered_diffs = [d for d in diffs if d != 0]
@@ -631,9 +599,6 @@ def wilcoxon_signed_rank_test(dt1: list, dt2: list) -> dict:
 
 # Kruskal-Wallis Test
 def kruskal_wallis_test(*groups) -> dict:
-    from math import inf
-    from scipy.integrate import quad
-
     all_data = []
     group_info = [] # Length for each group
     for g in groups:
@@ -672,8 +637,6 @@ def kruskal_wallis_test(*groups) -> dict:
 
 # Post Hoc Test (Bonferroni)
 def post_hoc_bonferroni(*groups: list, method = 't_test') -> list:
-    from itertools import combinations
-
     k = len(groups)
     pairs = list(combinations(range(k), 2))
     m = len(pairs)
@@ -729,8 +692,6 @@ def spearman_corr(x: list, y: list) -> dict:
 
 # Logistic Regression
 def logistic_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X is a matrix and y is a vector
-    import numpy as np
-
     # Design matrix
     n_samples, n_features = X.shape
     X_design = np.hstack([np.ones((n_samples, 1)), X])
@@ -759,8 +720,6 @@ def logistic_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X i
 
 # ROC AUC
 def roc_auc(y_true, y_probs) -> dict:
-    import numpy as np
-
     # Zip the labels and probabilities together and sort by probabilities
     y_true = np.array(y_true).ravel()
     y_probs = np.array(y_probs).ravel()
@@ -807,8 +766,6 @@ def roc_auc(y_true, y_probs) -> dict:
 
 # Plot ROC curve (optional)
 def plot_roc_curve(roc_results) -> None:
-    import matplotlib.pyplot as plt
-
     # Parameters
     fpr = [point[0] for point in roc_results['roc_points']]
     tpr = [point[1] for point in roc_results['roc_points']]
@@ -831,8 +788,6 @@ def plot_roc_curve(roc_results) -> None:
 
 # Power Method
 def power_method(matrix, iterations=1000, tolerance=1e-10) -> tuple:
-    import numpy as np
-
     # Check if matrix is square
     n, m = matrix.shape
     if n != m:
@@ -864,13 +819,11 @@ def power_method(matrix, iterations=1000, tolerance=1e-10) -> tuple:
 
 # Helper function for softmax
 def _softmax(z):
-    import numpy as np
     exp_z = np.exp(z - np.max(z, axis=1, keepdims=True)) # For numerical stability
     return exp_z / np.sum(exp_z, axis=1, keepdims=True)
 
 # Multinomial Logistic Regression
 def softmax_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X is a matrix and y is a vector of class labels
-    import numpy as np
 
     X = np.array(X)
     y = np.array(y).ravel()
@@ -905,8 +858,6 @@ def softmax_regression(X, y, lr = 0.01, iterations = 1500) -> dict: # Where X is
     
 # Ridge Regression
 def ridge_regression(X, Y, alpha = 1.0) -> dict: # Where X is a matrix and Y is a vector
-    import numpy as np
-
     # Get dimensions of the data
     n_samples, n_features = X.shape
 
@@ -944,8 +895,6 @@ def lasso_regression(X, y, alpha = 1.0, iterations = 1000, tol = 1e-4) -> dict:
         param iterations: Number of iterations for coordinate descent
         param tol: Tolerance for convergence
     '''
-    import numpy as np
-
     # Standardization
     X_mean = np.mean(X, axis=0)
     X_std = np.std(X, axis=0)
@@ -1004,8 +953,6 @@ def pca(X, n_components: int) -> dict:
         param X: A matrix of features (beta_1, beta_2, ..., beta_n)
         param n_components: Number of principal components to retain
     '''
-    import numpy as np
-
     # Centering the data (Standardization)
     # Mean for each feature (column)
     X_mean = np.mean(X, axis=0)
@@ -1071,8 +1018,6 @@ def portfolio_optimization(returns_matrix, n_portfolios: int = 10000, risk_free_
         param n_portfolios: how many times we run Monte Carlo simulation
         param risk_free_rate: risk-free interest rate (spot rate)
     '''
-    import numpy as np
-
     # 1. Basic Statistics
     # 1.1 Expected Returns for Each Asset
     mean_returns = np.mean(returns_matrix, axis = 0) # Calculate mean for each column
@@ -1119,3 +1064,62 @@ def portfolio_optimization(returns_matrix, n_portfolios: int = 10000, risk_free_
         'optimal_weights': best_weights,
         'all_results': results
     }
+
+# Visualization of Efficient Frontier
+def plot_efficient_frontier(result, returns_df) -> None:
+    # 1. Extract data from result, where [0,:] is annualized return, [1,:] is annualized risk, [2,:] is SR
+    port_results = result['all_results']
+
+    # 2. Create figure
+    plt.figure(figsize = (10, 7))
+
+    # 3. Plot all possible portfolios
+    scatter = plt.scatter(
+        port_results[1,:],
+        port_results[0,:],
+        c = port_results[2,:],
+        cmap = 'viridis',
+        marker = 'o',
+        s = 10,
+        alpha = 0.3
+    )
+    plt.colorbar(scatter, label = 'Sharpe Ratio')
+
+    # 4. Emphasize the point where Sharpe ratio is maximized
+    plt.scatter(
+        result['optimal_risk'],
+        result['optimal_return'],
+        color = 'red',
+        marker = '*',
+        s = 200,
+        label = 'Max SR'
+    )
+
+    # 5. Plot stocks
+    mean_returns = returns_df.mean() * 252
+    std_devs = returns_df.std() * (252**0.5)
+    for i, ticker in enumerate(returns_df.columns):
+        plt.scatter(
+            std_devs[i],
+            mean_returns[i],
+            marker = 'D',
+            s=50
+        )
+        plt.annotate(
+            ticker,
+            (std_devs[i], mean_returns[i]),
+            xytext=(5, 5),
+            textcoords='offset points'
+        )
+    
+    # 6. Adjustment
+    plt.title('Efficient Frontier', fontsize=15)
+    plt.xlabel('Annualized Volatility (Risk)', fontsize=12)
+    plt.ylabel('Annualized Return', fontsize=12)
+    plt.legend(labelspacing=0.8)
+    plt.grid(True, linestyle='--', alpha=0.5)
+    
+    plt.tight_layout()
+    plt.show()
+
+    return None
